@@ -262,4 +262,4 @@ It balances **research flexibility** with **production discipline**, making it s
 
 ---
 
-**Visit YouTube Channel for more information: https://www.youtube.com/@BDB5905**
+**Visit my YouTube Channel for more information: https://www.youtube.com/@BDB5905**
