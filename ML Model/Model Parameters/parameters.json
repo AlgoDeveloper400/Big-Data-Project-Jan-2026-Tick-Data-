@@ -1,0 +1,47 @@
+{
+  "paths": {
+    "artifacts_path": "your/own/path/Model Artifacts and Weights",
+    "data_path": "",
+    "symbols_path": "your/own/path/ML Model/Model Parameters/symbol_list.json",
+    "scripts_path": "your/own/path/ML Model/Scripts"
+  },
+
+  "mlflow": {
+    "enabled": true,
+    "tracking_uri": "http://localhost:5000",
+    "experiment_name_prefix": "TickAnomaly"
+  },
+
+  "data": {
+    "keep_first_percentage": 0.0,
+    "train_ratio": 0.0,
+    "val_ratio": 0.0,
+    "test_ratio": 0.0,
+    "target_ticks_per_day": 0,
+    "features": ["Bid", "Ask", "Spread"]
+  },
+
+  "model": {
+    "hidden_dims": [256, 128, 64, 32],
+    "latent_dim": 16,
+    "dropout_rate": 0.0,
+    "activation": "leaky_relu",
+    "use_batch_norm": true,
+    "weight_decay": 0.0001
+  },
+
+  "training": {
+    "num_epochs": 2000,
+    "batch_size": 168,
+    "learning_rate": 0.0005,
+    "optimizer": "AdamW",
+    "loss_function": "MSE",
+    "early_stopping": "no",
+    "patience": 30,
+    "weight_decay": 0.0001
+  },
+
+  "anomaly_detection": {
+    "percentile_thresholds": [92, 99.5]
+  }
+}

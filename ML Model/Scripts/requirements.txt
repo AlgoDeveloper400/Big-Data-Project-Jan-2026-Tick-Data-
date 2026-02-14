@@ -1,0 +1,26 @@
+# Core ML/DL Frameworks
+torch>=2.0.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# FastAPI & Web Server
+fastapi>=0.104.0
+uvicorn>=0.24.0
+python-multipart>=0.0.6
+
+# MLflow for Experiment Tracking
+mlflow>=2.9.0
+
+# MetaTrader5 for Live Trading Data
+MetaTrader5>=5.0.43
+
+# HTTP Client
+requests>=2.31.0
+
+# Data Processing
+pyarrow>=14.0.0  # For parquet file support
+
+
+# Optional: For GPU support (if using CUDA)
+# torch>=2.0.0+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
