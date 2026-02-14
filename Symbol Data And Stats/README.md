@@ -1,0 +1,1 @@
+This folder shows some basics stats for the data i have collected and used in the ml model, the results may vary based on how much data you will collect, this is around 50 gbs. Yours will likely be less stable and have more jumps.
