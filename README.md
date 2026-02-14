@@ -1,11 +1,7 @@
 # Big Data Tick Data ML Trading Pipeline — Jan 2026
 
-![Tick Data ML Trading Pipeline](./Tick%20Data%20ML%20Trading%20Pipeline%20JAN%20TO%20FEB%202026.png)
+![Gold Data Lake House Architecture](./Gold%20Data%20Lake%20House%20architecture%20Feb%202026_V1.png)
 
-> **Status:** Active development  
-> **Notice:** This pipeline is iterative and subject to change. Components, data flow, tools, and deployment strategies may evolve as performance, scalability, and research requirements change. This README reflects the current architecture, not a final design.
-
----
 
 ## 1. High-Level Overview
 
@@ -15,7 +11,7 @@ This project is an **end-to-end quantitative trading ML system** designed to:
 * Perform scalable data processing and feature engineering  
 * Train, validate, and test pattern-based ML models  
 * Track experiments and models  
-* Deploy trained models to live trading (MT5)  
+* Deploy trained models to demo trading (MT5)  
 
 The architecture follows **ML-Ops best practices**, separating concerns across:
 
@@ -24,7 +20,8 @@ The architecture follows **ML-Ops best practices**, separating concerns across:
 * Model lifecycle (training → validation → testing)  
 * Experiment tracking  
 * Deployment  
-* Monitoring and orchestration  
+* Monitoring and orchestration
+* Data lakehouses  
 
 ---
 
