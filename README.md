@@ -1,222 +1,288 @@
-# Big Data Tick Data ML Trading Pipeline — Jan 2026
+# 📈 Big Data Tick Data ML Trading Pipeline — Jan 2026  
 
 ![Gold Data Lake House Architecture](./Gold%20Data%20Lake%20House%20architecture%20Feb%202026_V1.png)
 
+---
 
-## 1. High-Level Overview
+# 1️⃣ System Overview
 
-This project is an **end-to-end quantitative trading ML system** designed to:  
+This project implements a **full-stack quantitative ML trading architecture** built around:
 
-* Ingest high-frequency tick data  
-* Perform scalable data processing and feature engineering  
-* Train, validate, and test pattern-based ML models  
-* Track experiments and models  
-* Deploy trained models to demo trading (MT5)  
+- High-frequency tick ingestion  
+- Distributed data processing  
+- Lakehouse storage (Iceberg + S3 + Postgres catalog)  
+- Model lifecycle management  
+- Backtesting & walk-forward validation  
+- MT5 deployment for live/demo execution  
+- Experiment tracking  
 
-The architecture follows **ML-Ops best practices**, separating concerns across:
-
-* Data ingestion  
-* Data processing  
-* Model lifecycle (training → validation → testing)  
-* Experiment tracking  
-* Deployment  
-* Monitoring and orchestration
-* Data lakehouses  
+The system is modular, scalable, and production-oriented.
 
 ---
 
-## 2. Data Source Layer
+# 2️⃣ Data Source Layer
 
-### 2.1 Dukascopy Tick Data
+## 2.1 Dukascopy Website
 
-* **Source:** Dukascopy historical tick data  
-* **Type:** Raw tick-level price data  
-* **Granularity:** Sub-second frequency  
+**Source:** Historical tick data  
+**Format:** Raw CSV  
+**Granularity:** Sub-second  
 
-**Responsibilities:**  
+**Responsibilities:**
 
-* Provide immutable raw market data  
-* Serve as the source of truth for downstream processing  
-
----
-
-## 3. Raw Data Storage
-
-### 3.1 Raw CSV Storage
-
-* Raw tick data is downloaded and stored in CSV format  
-* No transformations are applied at this stage  
-
-**Benefits:**  
-
-* Preserves original data for reproducibility  
-* Enables reprocessing with alternative logic  
-* Acts as a recovery point for downstream failures  
+- Download immutable historical tick data  
+- Maintain original dataset integrity  
+- Provide reproducible base data  
 
 ---
 
-## 4. Data Processing Layer
+# 3️⃣ Data Replication Layer
 
-### 4.1 Spark-Based Processing
+## 3.1 Local → S3 Transfer (NiFi)
 
-**Tooling:** Apache Spark  
+Large finalized datasets are transferred:
 
-**Workflow:**  
+- From local file system  
+- To S3 object storage  
+- Using Apache NiFi  
 
-1. Ingest raw CSV files  
-2. Convert CSV to Parquet (columnar, efficient)  
-3. Apply large-scale transformations  
+**NiFi handles:**
 
-**Rationale:**  
+- Transfer orchestration  
+- Backpressure control  
+- Flow monitoring  
+- Reliability  
 
-* Efficient processing of massive tick datasets  
-* Parallel computation for scalability  
-* Memory-efficient data transformations  
-
----
-
-### 4.2 Cleaning & Imputation
-
-**Tasks:**  
-
-* Handle missing ticks  
-* Remove corrupt or invalid rows  
-* Normalize timestamps  
-* Prepare consistent numerical features  
-
-**Output:** Cleaned datasets ready for ML consumption  
+This layer ensures stable movement into the lakehouse.
 
 ---
 
-## 5. Orchestration & Monitoring
+# 4️⃣ Raw CSV Storage
 
-### 5.1 Apache NiFi
+Raw tick data is stored unmodified in CSV format.
 
-Used for pipeline orchestration and monitoring:  
+**Purpose:**
 
-* Monitors data ingestion  
-* Tracks data movement between stages  
-* Detects failures and bottlenecks  
-* Ensures reliability of long-running flows  
+- Immutable recovery layer  
+- Enables reprocessing  
+- Protects against transformation errors  
+- Maintains auditability  
 
-NiFi ensures consistent data flow; it does not train models.  
-
----
-
-### 5.2 Version Control
-
-* All code, configuration, and pipeline definitions are version-controlled  
-* Enables reproducibility and rollback capability  
+No transformations occur at this stage.
 
 ---
 
-## 6. Machine Learning Pipeline
+# 5️⃣ Data Processing Layer
 
-### 6.1 Pattern Model Core
+## 5.1 Python Conversion Stage
 
-The Pattern Model:  
+- Ingest raw CSV  
+- Convert CSV to Parquet  
+- Save as partitioned datasets  
 
-* Consumes processed tick data  
-* Extracts predictive patterns  
-* Learns from historical behavior  
+**Benefits of partitioning:**
 
-Models are **continuously improved** through retraining.  
-
----
-
-### 6.2 Training, Validation & Testing
-
-* **Training:** Learns parameters and decision boundaries from historical data  
-* **Validation:** Evaluates performance on unseen data to prevent overfitting  
-* **Testing:** Final evaluation on isolated test sets simulating real-world behavior  
-
-Only models passing all three stages are deployed.  
+- Faster reads  
+- Efficient Spark processing  
+- Scalable storage  
 
 ---
 
-### 6.3 Live Endpoint API
+## 5.2 Spark Processing
 
-* Exposes trained models via an API  
-* Accepts live or near-real-time market data  
-* Outputs trading signals for deployment  
+Apache Spark performs:
 
----
+- Large-scale cleaning  
+- Sorting  
+- Missing value handling  
+- Timestamp normalization  
+- Feature preparation  
 
-## 7. Experiment & Model Tracking
-
-**Tool:** MLflow  
-
-**Functionality:**  
-
-* Track experiments and log metrics  
-* Store model artifacts  
-* Compare model versions  
-
-**Benefits:** Full audit trail, easy rollback, transparent performance comparison  
+**Output:** ML-ready datasets
 
 ---
 
-## 8. Deployment Layer
+# 6️⃣ Data Version Control
 
-### 8.1 MT5 Deployment
+Final datasets are versioned using:
 
-* Trained models are deployed to MetaTrader 5 (MT5)  
-* Signals are streamed from the ML API to MT5  
+- DVC (Data Version Control)
 
-### 8.2 Live / Demo Trade Execution
+**Benefits:**
 
-* Signals trigger automated trade execution  
-* Operates in demo mode or backtesting  
-* Execution logic is separate from model logic  
-
----
-
-## 9. Monitoring & Feedback Loops
-
-* Each stage emits monitoring signals  
-* Feedback used to:  
-  * Retrain models  
-  * Adjust preprocessing logic  
-  * Tune execution strategies  
-
-This creates a **closed feedback loop** between live trading and research.  
+- Reproducibility  
+- Dataset lineage  
+- Controlled experimentation  
+- Rollback capability  
 
 ---
 
-## 10. Design Principles
+# 7️⃣ Data Lakehouse Architecture
 
-* **Reproducibility:** Raw data preserved  
-* **Scalability:** Distributed processing with Spark  
-* **Separation of Concerns:** Data, ML, and execution isolated  
-* **Observability:** Monitoring at all stages  
-* **Flexibility:** Components can be swapped or upgraded  
+The lakehouse is the central storage and analytics layer.
 
----
+## 7.1 Storage Components
 
-## 11. Change Disclaimer
+- **S3** → Stores Parquet data files  
+- **Postgres** → Stores Iceberg table metadata  
+- **Apache Iceberg** → Table format layer  
 
-**Expected future updates:**  
+**Iceberg provides:**
 
-* Alternative data sources  
-* New feature engineering techniques  
-* Upgraded model architectures  
-* Additional risk management layers  
-* Improved deployment strategies  
-
-This architecture is a **snapshot**, not a fixed specification.  
+- ACID guarantees  
+- Schema evolution  
+- Snapshot isolation  
+- Time travel  
 
 ---
 
-## 12. Summary
+## 7.2 Lakehouse Tables
 
-This pipeline represents a **professional-grade ML trading system**, handling:  
+Structured tables are created on top of S3 data using Iceberg.
 
-* High-frequency financial data  
-* Robust ML experimentation  
-* Controlled live deployment  
+These tables represent:
 
-It balances **research flexibility** with **production discipline**, suitable for continuous improvement and real-world trading.  
+- Gold datasets (ML-ready)  
 
 ---
 
-**YouTube Channel:** [https://www.youtube.com/@BDB5905](https://www.youtube.com/@BDB5905)
+## 7.3 Query Engine
+
+**Trino** is used as the query engine.
+
+**Capabilities:**
+
+- SQL analytics on Iceberg tables  
+- Distributed query execution  
+- Research queries for feature engineering  
+- Dataset validation before ML usage  
+
+---
+
+# 8️⃣ Machine Learning Pipeline (FastAPI UI)
+
+The ML system follows a strict lifecycle.
+
+## 8.1 Model Core
+
+- Anomaly / pattern detection models  
+- Consumes gold datasets  
+- Produces trading signals  
+
+---
+
+## 8.2 Training Phase
+
+- Learns model parameters  
+- Uses historical tick datasets  
+- Logs metrics  
+
+---
+
+## 8.3 Validation Phase
+
+- Evaluates on unseen data  
+- Detects overfitting  
+- Tunes hyperparameters  
+
+---
+
+## 8.4 Testing Phase
+
+- Final performance validation  
+- Simulates real-world behavior  
+- Ensures production readiness  
+
+Only fully validated models proceed to deployment.
+
+---
+
+## 8.5 Live Endpoint API
+
+- Exposes trained model via FastAPI  
+- Accepts live tick data  
+- Returns structured trade signals  
+- Used by MT5 and trading systems  
+
+---
+
+# 9️⃣ Symbol Backtest & Trading System (Optional)
+
+This layer enables strategy evaluation before live deployment.
+
+## 9.1 MT5 Historical Backtest
+
+- Uses MT5 historical API  
+- Tests model-generated signals  
+
+## 9.2 Walk Forward Validation
+
+- Rolling window evaluation  
+- Mimics production retraining cycles  
+- Reduces regime overfitting  
+
+## 9.3 Deployment with Model
+
+After passing walk-forward validation:
+
+- Model integrated into trading execution layer  
+
+---
+
+# 🔟 Deployment Layer
+
+## 10.1 MT5 Deployment
+
+- Models deployed to MetaTrader 5  
+- Signals streamed from Live Endpoint API  
+
+## 10.2 Live / Demo Execution
+
+- Automated trade execution  
+- Demo or live mode  
+- Execution logic separated from model logic  
+
+---
+
+# 1️⃣1️⃣ Model & Experiment Tracking
+
+## MLflow
+
+Tracks:
+
+- Model versions  
+- Hyperparameters  
+- Training metrics  
+- Artifacts  
+
+**Provides:**
+
+- Full audit trail  
+- Experiment comparison  
+- Reproducibility  
+
+---
+
+# 1️⃣2️⃣ Design Principles
+
+- **Reproducibility:** Raw data preserved  
+- **Scalability:** Distributed processing with Spark  
+- **Separation of Concerns:** Data, ML, and execution isolated  
+- **Observability:** Monitoring at all stages  
+- **Flexibility:** Components can be upgraded independently  
+
+---
+
+# 1️⃣3️⃣ Future Enhancements
+
+Planned improvements:
+
+- Alternative data sources  
+- Advanced feature engineering  
+- Improved model architectures  
+- Risk management layers  
+- Enhanced monitoring dashboards  
+
+This architecture represents a structured, evolving ML trading system built for continuous research and production deployment.
+
+**YouTube Channel:** [https://www.youtube.com/@BDB5905](https://www.youtube.com/@BDB5905) 
