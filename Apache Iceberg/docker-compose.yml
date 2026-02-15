@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  controller:
+    image: 'trinodb/trino'
+    hostname: trino
+    volumes:
+      - ./etc/catalog:/etc/trino/catalog
+    ports:
+      - '8081:8080'
+    depends_on:
+      object-store:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - JVM_OPTS=-Xmx2G -Xms1G
+    networks:
+      - trino-net                      # Trino ↔ MinIO & Postgres
+
+  object-store:
+    image: minio/minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+    ports:
+      - 9001:9001
+      - 9000:9000
+    command: ["server", "/data", "--console-address", ":9001"]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    networks:
+      - datalake-net                    # for NiFi (existing)
+      - trino-net                       # for Trino
+
+  postgres:
+    image: postgres:14
+    container_name: iceberg-postgres
+    environment:
+      POSTGRES_USER: etl
+      POSTGRES_PASSWORD: demopass
+      POSTGRES_DB: iceberg
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-iceberg.sql:/docker-entrypoint-initdb.d/init-iceberg.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U etl -d iceberg"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - trino-net                        # Trino can reach PostgreSQL
+
+volumes:
+  postgres_data:                          # persists PostgreSQL data (as in your original)
+
+networks:
+  datalake-net:
+    external: true                         # created manually for NiFi
+  trino-net:
+    driver: bridge                          # new network for Trino stack
