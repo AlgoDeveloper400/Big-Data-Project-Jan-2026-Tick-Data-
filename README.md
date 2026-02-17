@@ -285,4 +285,4 @@ Planned improvements:
 
 This architecture represents a structured, evolving ML trading system built for continuous research and production deployment.
 
-**YouTube Channel:** [https://www.youtube.com/@BDB5905](https://www.youtube.com/@BDB5905) 
+**YouTube Channel:** [https://youtu.be/igRmHdnu1u0](https://youtu.be/igRmHdnu1u0) 
